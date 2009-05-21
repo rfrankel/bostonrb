@@ -4,7 +4,7 @@
     = link_to "<strong>#{User.count}</strong> Users", "#people"
     = link_to "<strong>#{Project.count}</strong> Projects", "#projects"
     = link_to "<strong>#{Job.count}</strong> Jobs", "#jobs"
-    = link_to "<strong>0</strong> Presentations", "#presentations", :class => 'pending'
+    = link_to "<strong>#{Presentation.count}</strong> Presentations", "#presentations", :class => 'pending'
 
 #events
   .ribbon
@@ -14,20 +14,21 @@
       %h2 Recurring Events
       - @recurring_events.each do |event|
         .quarter>
-          %h3= link_to event.title, event
+          %h3= link_to h(event.title), event
           %p= event.cached_description_html
 
 #other_events.row
   %h3.center Special events
   %p.center
-    = sentence_of event_links(@special_events)
+    = sentence_of link_to_each(@special_events)
 
 #people
   .row
     %h2 Users
     .collage
-      - @users.each do |user|
-        = image_tag(user.gravatar_url)
+      - @users.in_groups_of(24, false).each_with_index do |users, index|
+        %div{collage_div_attributes(index)}
+          = collage_of(users)
 
 #twitter_blogs
   .row
@@ -51,16 +52,13 @@
       %p= link_to 'New project', new_project_path
     %h2 Open Source Projects
     - if @featured_project
-      .half.pending>
+      .half>
         %h3= link_to @featured_project.name, @featured_project.homepage_url
         %p= @featured_project.cached_description_html
-      .half.pending>
-        %ul
-          %li= project_link
-          %li= project_link
-          %li= project_link
-          %li= project_link
-          %li= project_link
+    .half>
+      %ul
+        - link_to_each(@recent_projects).each do |link|
+          %li= link
 
 #apps.row.pending
   %h3.center Apps
@@ -80,20 +78,24 @@
         - @recent_jobs.each do |job|
           %li= link_to job.title, job
 
-#companies.row.pending
+#companies.row
   %h3.center Companies
   %p.center
-    = sentence_of(company_links)
+    = sentence_of link_to_each(@recent_companies)
 
-#presentations.pending
+#presentations
   .row
+    .crud
+      %p= link_to 'New Presentation', new_presentation_path
     %h2 Presentations
-    .half>
-      %h3 Agile Design
-      %p Dan Pickett talks about lorem ipsum dolor sit amet.
+    - if @featured_presentation
+      .half>
+        %h3= link_to @featured_presentation.title, @featured_presentation.url
+        %p== by #{@featured_presentation.presenter}
+        %p= @featured_presentation.description
     .half>
       %ul
-        - presentation_links.each do |each|
-          %li= each
+        - link_to_each(@recent_presentations).each do |link|
+          %li= link
 
 = render :partial => '/shared/about'
